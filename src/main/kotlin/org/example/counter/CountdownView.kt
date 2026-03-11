@@ -173,7 +173,8 @@ class CountdownView : VerticalLayout() {
         updateDisplay()
 
         timer?.cancel()
-        timer = Timer().scheduleAtFixedRate(1000, 1000) {
+        timer = Timer()
+        timer = (timer as Timer).scheduleAtFixedRate(1000, 1000) {
             ui.ifPresent { ui ->
                 ui.access {
                     remainingSeconds--
