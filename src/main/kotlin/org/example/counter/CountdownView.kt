@@ -19,7 +19,8 @@ class CountdownView : VerticalLayout() {
 
     private val minutesInput = IntegerField()
     private val startButton = Button("Start")
-    private val stopButton = Button("Stop")
+    private val pauseButton = Button("Pause")
+    private val resetButton = Button("Reset")
     private val minutesDisplay = Span("00")
     private val secondsDisplay = Span("00")
     private val separator = Span(":")
@@ -116,26 +117,38 @@ class CountdownView : VerticalLayout() {
             style.apply {
                 set("background", "linear-gradient(135deg, #667eea 0%, #764ba2 100%)")
                 set("border", "none")
-                set("padding", "12px 40px")
+                set("padding", "12px 30px")
                 set("font-weight", "600")
                 set("cursor", "pointer")
             }
             addClickListener { startCountdown() }
         }
 
-        // Stop button styling
-        stopButton.apply {
+        // Pause button styling
+        pauseButton.apply {
             isEnabled = false
-            addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_LARGE)
+            addThemeVariants(ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_LARGE)
             style.apply {
-                set("padding", "12px 40px")
+                set("padding", "12px 30px")
                 set("font-weight", "600")
                 set("cursor", "pointer")
             }
-            addClickListener { stopCountdown() }
+            addClickListener { pauseCountdown() }
         }
 
-        buttonLayout.add(startButton, stopButton)
+        // Reset button styling
+        resetButton.apply {
+            isEnabled = false
+            addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_LARGE)
+            style.apply {
+                set("padding", "12px 30px")
+                set("font-weight", "600")
+                set("cursor", "pointer")
+            }
+            addClickListener { resetCountdown() }
+        }
+
+        buttonLayout.add(startButton, pauseButton, resetButton)
 
         // Add all components to card
         card.add(title, minutesInput, displayContainer, buttonLayout)
@@ -145,12 +158,16 @@ class CountdownView : VerticalLayout() {
     }
 
     private fun startCountdown() {
-        val minutes = minutesInput.value ?: 1
-        remainingSeconds = minutes * 60
+        // Only set initial time if starting fresh (remainingSeconds is 0)
+        if (remainingSeconds == 0) {
+            val minutes = minutesInput.value ?: 1
+            remainingSeconds = minutes * 60
+        }
 
         minutesInput.isEnabled = false
         startButton.isEnabled = false
-        stopButton.isEnabled = true
+        pauseButton.isEnabled = true
+        resetButton.isEnabled = true
 
         // Update display immediately to show starting time
         updateDisplay()
@@ -164,9 +181,7 @@ class CountdownView : VerticalLayout() {
                         updateDisplay()
                     }
                     if (remainingSeconds < 0) {
-                        stopCountdown()
-                        playSound()
-                        Notification.show("Countdown finished!", 3000, Notification.Position.MIDDLE)
+                        finishCountdown()
                     }
                 }
             }
@@ -196,16 +211,42 @@ class CountdownView : VerticalLayout() {
         }
     }
 
-    private fun stopCountdown() {
+    private fun pauseCountdown() {
+        timer?.cancel()
+        timer = null
+
+        startButton.isEnabled = true
+        pauseButton.isEnabled = false
+        // Keep resetButton enabled so user can reset if they want
+    }
+
+    private fun resetCountdown() {
         timer?.cancel()
         timer = null
 
         minutesInput.isEnabled = true
         startButton.isEnabled = true
-        stopButton.isEnabled = false
+        pauseButton.isEnabled = false
+        resetButton.isEnabled = false
 
         remainingSeconds = 0
         updateDisplay()
+    }
+
+    private fun finishCountdown() {
+        timer?.cancel()
+        timer = null
+
+        minutesInput.isEnabled = true
+        startButton.isEnabled = true
+        pauseButton.isEnabled = false
+        resetButton.isEnabled = false
+
+        remainingSeconds = 0
+        updateDisplay()
+
+        playSound()
+        Notification.show("Countdown finished!", 3000, Notification.Position.MIDDLE)
     }
 
     private fun updateDisplay() {
