@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⏱️ Countdown Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .display-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px 50px;
+            margin: 30px 0;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .time-digit {
+            font-size: 72px;
+            font-weight: 700;
+            color: white;
+            font-family: 'Courier New', monospace;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .separator {
+            font-size: 72px;
+            font-weight: 700;
+            color: white;
+            margin: 0 10px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-pause {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-pause:hover:not(:disabled) {
+            background: #5a6268;
+        }
+
+        .btn-reset {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-reset:hover:not(:disabled) {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>⏱️ Countdown Timer</h1>
+
+        <div class="input-group">
+            <label for="minutes">Minuten</label>
+            <input type="number" id="minutes" min="1" max="999" value="1">
+        </div>
+
+        <div class="display-container">
+            <div class="time-digit" id="minutesDisplay">00</div>
+            <div class="separator">:</div>
+            <div class="time-digit" id="secondsDisplay">00</div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-start" id="startBtn">Start</button>
+            <button class="btn-pause" id="pauseBtn" disabled>Pause</button>
+            <button class="btn-reset" id="resetBtn" disabled>Reset</button>
+        </div>
+    </div>
+
+    <script>
+        let remainingSeconds = 0;
+        let timer = null;
+
+        const minutesInput = document.getElementById('minutes');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const minutesDisplay = document.getElementById('minutesDisplay');
+        const secondsDisplay = document.getElementById('secondsDisplay');
+
+        function updateDisplay() {
+            const mins = Math.floor(remainingSeconds / 60);
+            const secs = remainingSeconds % 60;
+            minutesDisplay.textContent = String(mins).padStart(2, '0');
+            secondsDisplay.textContent = String(secs).padStart(2, '0');
+        }
+
+        function playSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function startCountdown() {
+            if (remainingSeconds === 0) {
+                const minutes = parseInt(minutesInput.value) || 1;
+                remainingSeconds = minutes * 60;
+            }
+
+            minutesInput.disabled = true;
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            resetBtn.disabled = false;
+
+            updateDisplay();
+
+            timer = setInterval(() => {
+                remainingSeconds--;
+                if (remainingSeconds >= 0) {
+                    updateDisplay();
+                }
+                if (remainingSeconds < 0) {
+                    finishCountdown();
+                }
+            }, 1000);
+        }
+
+        function pauseCountdown() {
+            clearInterval(timer);
+            timer = null;
+
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+        }
+
+        function resetCountdown() {
+            clearInterval(timer);
+            timer = null;
+
+            minutesInput.disabled = false;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            resetBtn.disabled = true;
+
+            remainingSeconds = 0;
+            updateDisplay();
+        }
+
+        function finishCountdown() {
+            clearInterval(timer);
+            timer = null;
+
+            minutesInput.disabled = false;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            resetBtn.disabled = true;
+
+            remainingSeconds = 0;
+            updateDisplay();
+
+            playSound();
+            alert('Countdown finished!');
+        }
+
+        startBtn.addEventListener('click', startCountdown);
+        pauseBtn.addEventListener('click', pauseCountdown);
+        resetBtn.addEventListener('click', resetCountdown);
+    </script>
+</body>
+</html>
+

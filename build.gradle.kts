@@ -3,7 +3,6 @@ plugins {
     kotlin("plugin.spring") version "2.3.0"
     id("org.springframework.boot") version "3.4.1"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.vaadin") version "24.6.4"
 }
 
 group = "org.example"
@@ -14,8 +13,9 @@ repositories {
 }
 
 dependencies {
-    implementation("com.vaadin:vaadin-spring-boot-starter:24.6.4")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation(kotlin("test"))
