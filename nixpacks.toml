@@ -2,8 +2,8 @@
 nixPkgs = ["jdk21"]
 
 [phases.build]
-cmds = ["./gradlew clean build -x test --no-daemon"]
+cmds = ["./gradlew clean build -x test --no-daemon -Pvaadin.productionMode=false"]
 
 [start]
-cmd = "java -Dserver.port=$PORT -jar build/libs/*.jar"
+cmd = "java -jar build/libs/*.jar"
 
