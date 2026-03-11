@@ -2,7 +2,7 @@
 nixPkgs = ["jdk21"]
 
 [phases.build]
-cmds = ["./gradlew clean build -x test --no-daemon -Pvaadin.productionMode=false"]
+cmds = ["./gradlew clean build -x test --no-daemon -Pvaadin.productionMode"]
 
 [start]
 cmd = "java -jar build/libs/*.jar"
