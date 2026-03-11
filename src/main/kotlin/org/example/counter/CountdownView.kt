@@ -25,7 +25,8 @@ class CountdownView : VerticalLayout() {
     private val secondsDisplay = Span("00")
     private val separator = Span(":")
 
-    private var timer: TimerTask? = null
+    private var timerTask: TimerTask? = null
+    private var timer: Timer? = null
     private var remainingSeconds = 0
 
     init {
@@ -172,9 +173,10 @@ class CountdownView : VerticalLayout() {
         // Update display immediately to show starting time
         updateDisplay()
 
+        timerTask?.cancel()
         timer?.cancel()
         timer = Timer()
-        timer = (timer as Timer).scheduleAtFixedRate(1000, 1000) {
+        timerTask = timer?.scheduleAtFixedRate(1000, 1000) {
             ui.ifPresent { ui ->
                 ui.access {
                     remainingSeconds--
@@ -213,7 +215,9 @@ class CountdownView : VerticalLayout() {
     }
 
     private fun pauseCountdown() {
+        timerTask?.cancel()
         timer?.cancel()
+        timerTask = null
         timer = null
 
         startButton.isEnabled = true
@@ -222,7 +226,9 @@ class CountdownView : VerticalLayout() {
     }
 
     private fun resetCountdown() {
+        timerTask?.cancel()
         timer?.cancel()
+        timerTask = null
         timer = null
 
         minutesInput.isEnabled = true
@@ -235,7 +241,9 @@ class CountdownView : VerticalLayout() {
     }
 
     private fun finishCountdown() {
+        timerTask?.cancel()
         timer?.cancel()
+        timerTask = null
         timer = null
 
         minutesInput.isEnabled = true
