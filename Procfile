@@ -1,2 +1,2 @@
-web: ./gradlew bootRun --no-daemon
+web: java -Dserver.port=$PORT -jar build/libs/*.jar
 
