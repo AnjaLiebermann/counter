@@ -2,8 +2,11 @@
 nixPkgs = ["jdk21"]
 
 [phases.build]
-cmds = ["./gradlew bootJar -x test --no-daemon"]
+cmds = [
+  "./gradlew --version",
+  "./gradlew bootJar -x test --no-daemon --build-cache --parallel"
+]
 
 [start]
-cmd = "java -Dvaadin.devmode.liveReload.enabled=false -jar build/libs/*.jar"
+cmd = "java -jar build/libs/*.jar"
 
